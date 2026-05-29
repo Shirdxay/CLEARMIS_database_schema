@@ -1,0 +1,147 @@
+
+//Look up table for meda data (enum, options, etc)
+Table meta {
+    id int [pk, increment]
+    key varchar [not null, unique, note:"key for the meta data, e.g, role_enum, caretaker_enum, etc"]
+    value varchar [not null, note:"value for the meta data, e.g, head, deputy, accountant, treasurer, member for role_enum; mother, father, grandmother, grandfather, other for caretaker_enum"]
+}
+//
+
+// to be put into the meta table
+enum role_enum{
+        head
+        deputy
+        accountant
+        treasurer
+        member
+    }
+//import from lao ethnicity master dataset
+Table ethnicity {
+    ethnicity_code varchar [pk,unique, not null, note:"unique identifier for ethinicity. e.g, 01.02"]
+    ethno_linguistic_group_en varchar [not null, note:"ethno-linguistic group in English"]
+    ethno_linguistic_group_la varchar [not null, note:"ethno-linguistic group in Laotiane"]
+    ethnicity_en varchar [not null, note:"ethnicity name in English"]
+    ethnicity_la varchar [not null, note:"ethnicity name in Laotiane"]
+}
+// will be linked to village profile_detail table in the future.
+table village_profile {
+  village_id char(7) [pk, unique, not null, note:"unique identifier for each village, format: province_code + district_code + village_code"]
+  village_name varchar 
+  district_name varchar
+  province_name varchar
+  batch int [not null, note:"implementation batch of the village, 1 or 2"]
+  //temporaty
+}
+//village_id will be used as a basis for creating group id, member id, and other ids in the future. 
+//It will be a 7 character code, where the first 2 characters represent the province code, 
+//the next 2 characters represent the district code, and the last 3 characters represent the village code.
+//For example, if a village is located in province 01, district 02, and has a village code of 003, then the village_code will be "0102003".
+table group{
+    group_id varchar [not null, note:"unique id for each group. group_id will be generated as province_code - district_code - village_code - batch - group_type - group_number"]
+    village_id char(7) [not null, ref: < village_profile.village_id, note:"foreign key referencing village profile id"]
+    name varchar [null, note:"name of the group, nullable"]
+    group_type varchar [not null, note:"type of the group, either SHG or CNG; Others such as VSMC, VDP can also be added"]
+    date_created date [not null, note:"date when the group was created"]
+    isActive boolean [default: true, note:"indicates whether the group is currently active"]
+    isApproved boolean [default: false, note:"indicates whether the group has been approved by the project team"]
+    created_at timestamp [default: `now()`, note:"timestamp when the group was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the group was last updated"]
+}
+// calculate on the fly: 1. NLT (Non-Lao-Tai) via joining with ethnicity table
+table member_shg{
+    member_id varchar [pk,unique, not null, note:"unique member id for each member. e.g, group_id - member_number"]
+    group_id varchar [not null, ref: > group.group_id, note:"foreign key referencing group id"]
+    name varchar [not null]
+    gender char(1) [not null, note:"{M,F}"]
+    role role_enum [not null, note:"role of the member in the SHG"]
+    ethinicity_code int [not null, ref: < ethnicity.ethnicity_code, note:"ethnicity of the member, reference to ethnicity table"]
+    join_date date [not null, note:"date when the member joined the SHG"]
+    isActive boolean [default: true, note:"indicates whether the member is currently active in the SHG"]
+    created_at timestamp [default: `now()`, note:"timestamp when the member was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the member was last updated"]
+}
+// cng member status will be calculated on the fly based on dob and join_date for child, and based on
+// child's status and mother's role in cng
+table member_cng{
+    member_id varchar [pk, unique, not null, note:"unique member id for each member"]
+    group_id varchar [not null, ref: > group.group_id, note:"foreign key referencing group id"]
+    name varchar [not null]
+    role role_enum [not null, note:"role of the member in the CNG"]
+    ethinicity_code int [not null, ref: < ethnicity.ethnicity_code, note:"ethnicity of the member, reference to ethnicity table"]
+    shg_member_id varchar [not null, ref: < member_shg.member_id, note:"foreign key referencing member id in member_shg table, to link the cng member with the shg member"]
+    join_date date [not null, note:"date when the child joined the CNG"]
+    created_at timestamp [default: `now()`, note:"timestamp when the member was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the member was last updated"]
+}
+// to be put into the meta table
+enum caretaker_enum{
+    mother
+    father
+    grandmother
+    grandfather
+    other
+}
+//ethnicity_code will be derived from mother_ethnicity in cng member table, and will be used to calculate NLT status for the child.
+//
+table member_cng_child{
+    member_id varchar [pk, unique, not null, note:"unique member id for each member. e.g, mother_id + child_number"]
+    mother_id varchar [not null, ref: > member_cng.member_id, note:"foreign key referencing mother id in member_cng table"]
+    name varchar [not null]
+    dob date [not null, note: "date of birth of the child"]
+    gender char(1) [not null, note:"{M,F}"]
+    ethinicity_code int [not null, ref: < ethnicity.ethnicity_code, note:"ethnicity of the member, reference to ethnicity table"]
+    caretaker caretaker_enum [not null, note:"caretaker of the child, either mother or other family member"]
+    join_date date [not null, note:"date when the child joined the CNG"]
+    created_at timestamp [default: `now()`, note:"timestamp when the member was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the member was last updated"]
+    }
+
+// Below are tables for loan, saving and transaction, which will be used to track the financial activities of the SHG members.
+// status: active, closed, defaulted, etc. will be calculated on the fly based on the loan repayment records and end_date of the loan.
+Table loan_account{
+    id varchar [pk, unique, not null, note:"unique identifier for each loan. e.g, member_id - loan_number"]
+    member_id varchar [not null, ref: > member_shg.member_id, note:"foreign key referencing member id in member_shg table"]
+    loan_source varchar [not null, note:"source of the loan, e.g, seed grant, group revolving fund"]
+    loan_category varchar [not null, note:"type of the loan, e.g, chicken raising, pig raising, etc"]
+    principal decimal(10,2) [not null, note:"principal amount of the loan"]
+    interest_rate decimal(5,2) [not null, note:"interest rate of the loan per year"]
+    term int [not null, note:"term of the loan in months"]
+    start_date date [not null, note:"start date of the loan"]
+    end_date date [not null, note:"end date of the loan , calculated as start_date + term"]
+    close_date date [null, note:"date when the loan was closed, nullable until the loan is closed"]   
+    note varchar [null, note:"additional note for the loan, nullable"]
+    created_at timestamp [default: `now()`, note:"timestamp when the loan was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the loan was last updated"]
+}
+
+// repayment records will be used to track the repayment activities of the loan. Each record represents a repayment made by the member for a specific loan. The status of the loan (active, closed, defaulted, etc.) can be calculated on the fly based on the repayment records and the end_date of the loan.
+// For example, if the loan has a repayment record with payment_date and the total amount repaid (principal_repaid + interest_repaid) is equal to or greater than the total amount due (principal + interest), then the loan can be marked as closed. If the current date is past the end_date and the loan is not fully repaid, then the loan can be marked as defaulted.
+// total amount paid will be calculated on query
+Table loan_repayment {
+    id int [pk, increment]
+    loan_id varchar [not null, ref: > loan_account.id, note:"foreign key referencing loan id in loan_account table"]
+    principal_repaid decimal(10,2) [not null, note:"principal amount repaid in this repayment"]
+    interest_repaid decimal(10,2) [not null, note:"interest amount repaid in this repayment"]
+    payment_date date [not null, note:"date when the repayment was made"]
+    note varchar [null, note:"additional note for the repayment, nullable"]
+    created_at timestamp [default: `now()`, note:"timestamp when the loan repayment was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the loan repayment was last updated"]
+}
+ Table saving_account {
+    account_id varchar [not null, ref: > member_shg.member_id, note:"foreign key referencing member id in member_shg table"]
+    balance decimal(10,2) [not null, default: 0.00, note:"current balance of the saving account. needed to be updated on each saving transaction"]
+    interest_rate decimal(5,2) [not null, note:"interest rate of the saving account per year"]
+    note varchar [null, note:"additional note for the saving account, nullable"]
+    created_at timestamp [default: `now()`, note:"timestamp when the saving account was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the saving account was last updated"]
+ }
+// on opening account, one transaction record will be created with amount = 0 to indicate the opening of the account. 
+ Table saving_transaction {
+    id int [pk, increment, note:"unique identifier for each saving transaction"]
+    account_id varchar [not null, ref: > saving_account.account_id, note:"foreign key referencing saving account id in saving_account table"]
+    amount decimal(10,2) [not null, note:"amount of the transaction, positive for deposit and negative for withdrawal"]
+    transaction_date date [not null, note:"date when the transaction was made"]
+    note varchar [null, note:"additional note for the saving transaction, nullable"]
+    created_at timestamp [default: `now()`, note:"timestamp when the saving transaction was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the saving transaction was last updated"]
+ }
