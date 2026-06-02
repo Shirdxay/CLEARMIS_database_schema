@@ -101,7 +101,7 @@ table member_cng_child{
 Table loan_account{
     id varchar [pk, unique, not null, note:"unique identifier for each loan. e.g, member_id - loan_number"]
     member_id varchar [not null, ref: > member_shg.member_id, note:"foreign key referencing member id in member_shg table"]
-    loan_source varchar [not null, note:"source of the loan, e.g, seed grant, group revolving fund"]
+    loan_source varchar [not null, note:"source of the loan, {seed grant, group revolving fund (GRF) and Revolving Loan Fund (RLF)}"]
     loan_category varchar [not null, note:"type of the loan, e.g, chicken raising, pig raising, etc"]
     principal decimal(10,2) [not null, note:"principal amount of the loan"]
     interest_rate decimal(5,2) [not null, note:"interest rate of the loan per year"]
@@ -128,8 +128,8 @@ Table loan_repayment {
     updated_at timestamp [default: `now()`, note:"timestamp when the loan repayment was last updated"]
 }
  Table saving_account {
-    account_id varchar [not null, ref: > member_shg.member_id, note:"foreign key referencing member id in member_shg table"]
-    balance decimal(10,2) [not null, default: 0.00, note:"current balance of the saving account. needed to be updated on each saving transaction"]
+    account_id varchar [pk, not null, ref: > member_shg.member_id, note:"foreign key referencing member id in member_shg table, shared primary key to ensure one saving account per member"]
+    balance decimal(10,2) [not null, default: 0.00, note:"current balance of the saving account. needed to be updated on each saving transaction by triggering"]
     interest_rate decimal(5,2) [not null, note:"interest rate of the saving account per year"]
     note varchar [null, note:"additional note for the saving account, nullable"]
     created_at timestamp [default: `now()`, note:"timestamp when the saving account was created"]
