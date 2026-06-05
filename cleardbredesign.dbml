@@ -25,7 +25,7 @@ Table ethnicity {
 }
 // will be linked to village profile_detail table in the future.
 table village_profile {
-  village_id char(7) [pk, unique, not null, note:"unique identifier for each village, format: province_code + district_code + village_code"]
+  village_id char(7) [pk, unique, not null, note:"unique identifier for each village, format: province_code + district_code + village_code. 6-7 digits code, e.g, 0102003"]
   village_name varchar 
   district_name varchar
   province_name varchar
@@ -145,3 +145,62 @@ Table loan_repayment {
     created_at timestamp [default: `now()`, note:"timestamp when the saving transaction was created"]
     updated_at timestamp [default: `now()`, note:"timestamp when the saving transaction was last updated"]
  }
+
+
+//CRI CLUSTER STARTS HERE
+table cri_village_priority{
+    id int [pk, increment, note:"unique identifier for each village priority record"]
+    village_id char(7) [not null, ref: < village_profile.village_id, note:"foreign key referencing village profile id"]
+    category varchar [not null, note:"category of the cri; controlled list; to be linked to meta table*"]
+    cri_type varchar [not null, note:"type of the CRI; controlled list; to be linked to meta table*"]
+    priority int [not null, note:"priority level of the CRI, e.g, 1 for highest priority, 2 for second priority, etc"]
+    uom varchar [not null, note:"unit of measurement for the CRI; controlled list; to be linked to meta table*"]
+    dim varchar [not null, note:"dimension of the CRI"]
+    unit_cost decimal(10,2) [not null, note:"unit cost for addressing the CRI"]
+    cri_count int [not null, note:"number of CRI of the same type to be addressed"]
+    total_cost decimal(10,2) [not null, note:"total cost for addressing the CRI"]
+    cri_selector varchar [not null, note:"selector (group) for the CRI, e.g, male, male over 14, etc"]
+    created_at timestamp [default: `now()`, note:"timestamp when the village priority record was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the village priority record was last updated"]
+    note: 
+    'this table will be used to store submission data from ENG_01;
+    it is intended to be static and will be updated by batch.'
+}
+
+table cri_registration{
+    cri_id varchar [pk, not null, unique, note:"unique code for each CRI, format: village_code - batch - cri_type - cri_number. e.g, 0102003-1-IRR-1"]
+    village_id char(7) [not null, ref: < village_profile.village_id, note:"foreign key referencing village profile id"]
+    cri_category varchar [not null, note:"category of the cri; controlled list; to be linked to meta table"]
+    cri_type varchar [not null, note:"type of the CRI; controlled list; to be linked to meta table"]
+    cri_number int [not null, note:"given number of the CRI"]
+    geo_location point [not null, note:"geographical location of the CRI; to be implemented as geopoint datatype in db"]
+    total_cost decimal(10,2) [not null, note:"total cost for addressing the CRI"]
+    budget_clear varchar [not null, note:"CLEAR approved budget for the CRI"]
+    budget_community varchar [not null, note:"community contribution for the CRI, either in cash or in kind"]
+    direct_beneficiary_total varchar [not null, note:"direct beneficiary of the CRI"]
+    direct_beneficiary_female int [not null, note:"number of female direct beneficiaries of the CRI"]
+    direct_beneficiary_NLT int [not null, note:"number of Non-Lao-Tai direct beneficiaries of the CRI"]
+    travel_time_saved int [not null, note:"estimated travel time saved after addressing the CRI, in minutes"]
+    note:
+    'this table will be used to store the CRI registration data from ENG_03 CRI Registration (formerly CRI activity proposal) form.;
+    input data will be available upon final VDP (village development plan) approved, which is about 3 months after the submision of village priority.'
+}
+
+table cri_registration_details{
+    cri_id varchar [not null, ref: - cri_registration.cri_id, note:"foreign key referencing cri_id in cri_registration table; one-to_one"]
+    cri_details jsonb [not null, note:"detailed description of the CRI; this field will store the full json data from KoboToolbox submission."]
+    note:
+    'This table wil be used as a reference for the detailed information of the CRI. it will not be queried frequently.'
+}
+
+
+table cri_progress{
+    cri_id varchar [not null, ref: > cri_registration.cri_id, note:"foreign key referencing cri_id in cri_registration table"]
+    progress int [not null, note:"progress percentage for addressing the CRI, from 0 to 100"]
+    note varchar [not null, note:"additional note for the CRI progress; info such as completed tasks + quality, observations, reason for no progress from the previous record, etc"]
+    progress_date date [not null, note:"date when the progress record was created"]
+    note:
+    'this table will be used to track the progress of addressing the CRI. Each record represents a progress update for a specific CRI. 
+    The progress percentage will be updated on each update, and the note field will be used to provide additional information about the progress, 
+    especially when there is no progress from the previous record, e.g, due to delay in procurement, etc.'
+}
