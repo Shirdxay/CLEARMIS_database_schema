@@ -187,7 +187,7 @@ table cri_registration{
 }
 
 table cri_registration_details{
-    cri_id varchar [not null, ref: - cri_registration.cri_id, note:"foreign key referencing cri_id in cri_registration table; one-to_one"]
+    cri_id varchar [not null, ref: - cri_registration.cri_id, note:"foreign key referencing cri_id in cri_registration table; one-to-one"]
     cri_details jsonb [not null, note:"detailed description of the CRI; this field will store the full json data from KoboToolbox submission."]
     note:
     'This table wil be used as a reference for the detailed information of the CRI. it will not be queried frequently.'
@@ -203,4 +203,64 @@ table cri_progress{
     'this table will be used to track the progress of addressing the CRI. Each record represents a progress update for a specific CRI. 
     The progress percentage will be updated on each update, and the note field will be used to provide additional information about the progress, 
     especially when there is no progress from the previous record, e.g, due to delay in procurement, etc.'
+
 }
+
+
+// NUT modules
+// powder management is recorded by group
+Table nut_powder_management{
+    id int [pk, increment, note:"unique identifier for each powder management record"]
+    group_id varchar [not null, ref: > group.group_id, note:"foreign key referencing group id in group table"]
+    cng_meetings_conducted int [not null, note:"number of cng meetings conducted in the month"]
+    total_participants int [not null, note:"total number of participants in the cng meetings"]
+    food_supported_families int [not null, note:"number of poor families receiving food support through cng meetings"]
+    food_from_shg decimal(13,2) [not null, note:"quantity of food received from SHG for powder management, in LAK"]
+    produced_powders jsonb [not null, note:"quantities of powders produced in the month, keyed by type; example: {rice: 10.2, vegetable: 5, fish: 2, meat: 1, legume: 4, other: 0}"]
+    shared_powders jsonb [not null, note:"quantities of powders shared to non-cng in the month, keyed by type; example: {rice: 10, vegetable: 5.1, fish: 2, meat: 1, legume: 4, other: 0}"]
+    grinder_used_cngs int [not null, note:"number of CNG members using the grinder for powder making in the month"]
+    grinder_produced_powder decimal(5,2) [not null, note:"quantity of powder produced by using the grinder in the month, in kg"]
+    community_contributed_food decimal(13,2) [not null, note:"Estimated value of food contributed by the community for powder management in the month, in LAK"]
+    support_undernutrition decimal(13,2) [not null, note:" amount of money for powder production for undernutritious children"]
+    created_at timestamp [default: `now()`, note:"timestamp when the powder management record was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the powder management record was last updated"]
+}
+// Shadehouse, HNG, MMPL, HH visit, and NTFP are moinitored by village
+// feq of mornitoring is monthly
+Table nut_monthly_update{
+    id int [pk, increment, note:"unique identifier for each monthly data record"]
+    village_id char(7) [not null, ref: < village_profile.village_id, note:"foreign key referencing village profile id"]
+    -- Shadehouse
+    shadehouse_model_farmers int [not null, note:"number of model farmers trained for shadehouse in the month"]
+    shadehouses_constructed int [not null, note:"number of shadehouses constructed in the month"]
+    cng_trained_by_model_farmers int [not null, note:"number of CNG members trained by model farmers in the month"]
+    veg_produced int [not null, note:"quantity of vegetables produced in the month, in LAK"]
+    veg_used_in_meetings int [not null, note:"quantity of vegetables used in CNG meetings in the month, in LAK"]
+    veg_sold int [not null, note:"quantity of vegetables sold in the month, in LAK"]
+        -- HNG
+    hng_model_farmers int [not null, note:"number of model farmers trained in the month"]
+    hng_trainings_conducted int [not null, note:"number of HNG training sessions conducted in the month"]
+    training_participants int [not null, note:"number of training participants in the month"]
+    tri_crops_households int [not null, note:"number of households practicing triple cropping in the month"]
+    -- Garden visit
+    garden_visits int [not null, note:"number of garden visits conducted by model farmers in the month"]
+    visited_hh int [not null, note:"number of households visited during the garden visits in the month"]
+
+
+    created_at timestamp [default: `now()`, note:"timestamp when the monthly data record was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the monthly data record was last updated"]
+}
+
+// to store simple meeting data
+Table meetings (
+    id int [pk, increment, note:"unique identifier for each meeting record"]
+    --NTFP meeting
+    group_id varchar [not null, ref: > group.group_id, note:"foreign key referencing group id in group table"]
+    meeting_type varchar [not null, note:"type of the meeting, e.g, NTFP meeting, Community Meeting (6-monthly)"]
+    trainings_conducted int [not null, note:"number of trainings conducted during the meeting"]
+    participants int [not null, note:"totalnumber of participants in the meetings"]
+    female_participants int [not null, note:"total number of female participants in the meetings"]
+    note varchar [null, note:"additional note for the meeting, nullable"]
+    created_at timestamp [default: `now()`, note:"timestamp when the meeting record was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the meeting record was last updated"]
+)
