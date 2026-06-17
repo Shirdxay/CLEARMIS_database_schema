@@ -1,4 +1,77 @@
 {
   "version": 1,
-  "positions": {}
+  "positions": {
+    "table-meta": {
+      "x": 1287,
+      "y": 75
+    },
+    "table-ethnicity": {
+      "x": 352.5,
+      "y": 518
+    },
+    "table-village_profile": {
+      "x": 193,
+      "y": 1539
+    },
+    "table-group": {
+      "x": 1218.5,
+      "y": 2087
+    },
+    "table-member_shg": {
+      "x": 1532,
+      "y": 946
+    },
+    "table-member_cng": {
+      "x": 494,
+      "y": 1479
+    },
+    "table-member_cng_child": {
+      "x": 314.75,
+      "y": 946
+    },
+    "table-loan_account": {
+      "x": 1810.5,
+      "y": 398
+    },
+    "table-loan_repayment": {
+      "x": 1797,
+      "y": 0
+    },
+    "table-saving_account": {
+      "x": 1523.5,
+      "y": 503
+    },
+    "table-saving_transaction": {
+      "x": 1537,
+      "y": 15
+    },
+    "table-cri_village_priority": {
+      "x": 338,
+      "y": 2027
+    },
+    "table-cri_registration": {
+      "x": 724.75,
+      "y": 2027
+    },
+    "table-cri_registration_details": {
+      "x": 751,
+      "y": 1584
+    },
+    "table-cri_progress": {
+      "x": 1045,
+      "y": 1554
+    },
+    "table-nut_powder_management": {
+      "x": 1295,
+      "y": 1404
+    },
+    "table-nut_monthly_update": {
+      "x": 0,
+      "y": 1982
+    },
+    "table-meetings": {
+      "x": 1794.056818181818,
+      "y": 1455.9886363636365
+    }
+  }
 }
