@@ -274,11 +274,16 @@ Table nut_monthly_update{
     count_trained_model_farmers int [not null,note: "number of model farmers trained by CLICK in the month"]
     count_video_produced int [not null]
     count_video_approved int [not null]
-    count_dissemminated int[] [not null, note:"int array of the number of dissemminated videos on [fb,yt,tiktok,whatsapp]"]
+    count_dissemminated_fb int [not null]
+    count_dissemminated int[] [not null]
+    count_dissemminated_fb int [not null]
+    count_dissemminated_yt int [not null]
+    count_dissemminated_tiktok int [not null]
+    count_dissemminated_whatsapp int [not null]
     // Garden visit
     //ວັນທີ, ເດືອນ, ປີ ລົງຢ້ຽມຢາມ	
     //ຈ.ນ ຄົວເຮືອນທັງໝົດທີ່ໄດ້ຢ້ຽມຢາມໂດຍກະສິກອນຕົວແບບ
-    visit_date int [not null, note:"visit dates"]
+    visit_date date [not null, note:"visit dates"]
     visited_hh int [not null, note:"number of households visited during the garden visits in the month"]
     created_at timestamp [default: `now()`, note:"timestamp when the monthly data record was created"]
     updated_at timestamp [default: `now()`, note:"timestamp when the monthly data record was last updated"]
