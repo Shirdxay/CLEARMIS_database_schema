@@ -225,11 +225,22 @@ Table nut_powder_management{
     created_at timestamp [default: `now()`, note:"timestamp when the powder management record was created"]
     updated_at timestamp [default: `now()`, note:"timestamp when the powder management record was last updated"]
 }
-// Shadehouse, HNG, MMPL, HH visit, and NTFP are moinitored by group; fq is monthly
+// Goat Dairy Shadehouse, HNG, MMPL, HH visit, and NTFP are moinitored by group; fq is monthly
 // nut_monthly_update store Shadehouse, HNG, MMPL and HH visit
 Table nut_monthly_update{
     id int [pk, increment, note:"unique identifier for each monthly data record"]
     group_id varchar [not null, ref: > group.group_id, note:"foreign key referencing group id in group table"]
+    // Goat Dairy
+    //ຈ.ນ ຜູ້ຊ່ວຍດ້ານກິດຈະກຳຮິດນົມແບ້ບ້ານ ໄດ້ຮັບການຝືກອົບຮົມຈາກ ຟາມຄວາຍຫຼວງພະບາງ
+    //ຈຳນວນ ຄອບຄົວ ທີ່ໄດ້ຮັບການຝືກອົບຮົມການລ້ຽງແບ້ຮິດເອົານົມຈາກທາງກະສິກອນຕົວແບບ
+    //ຈ.ນ ນ້ຳນົມທີ່ຮິດໄດ້ທັງໝົດ(ລິດ)
+    //ຈ.ນ ນ້ຳນົມທີ່ໄດ້ຂາຍໃຫ້ກຸ່ມໂພຊະນາການ(ລິດ)
+    //ຈ.ນ ຄອບຄົວທີ່ໄດ້ເຮັດໃບມັນຕົ້ນໝັກ
+    count_trained_milking int [not null]
+    count_trained_hh int [not null, note: "number of families trained in Goat Dairy"]
+    amount_milk decimal(5,2) [not null, note: "Milk produced in Litre"]
+    amount_sold decimal(5,2) [not null, note: "in Litre; amount sold to CNG"]
+    count_families_cassava_fermentation int [not null, note:"number of families engage in fermentation of cassava leaves"]
     // Shadehouse
     //ຈ.ນ ຄອບຄົວຕົວແບບທີ່ໄດ້ຮັບການຝືກອົບຮົມເຮືອນຮົ່ມຈາກສະມາຄົມກະສິກອນລາວ 	
     //ນ ເຮືອນຮົ່ມຊຸມຊົນທີ່ໄດ້ສ້າງຂື້ນ
@@ -263,10 +274,7 @@ Table nut_monthly_update{
     count_trained_model_farmers int [not null,note: "number of model farmers trained by CLICK in the month"]
     count_video_produced int [not null]
     count_video_approved int [not null]
-    count_dissemminated_fb int [not null]
-    count_dissemminated_yt int [not null]
-    count_dissemminated_tiktok int [not null]
-    count_dissemminated_whatsapp int [not null]
+    count_dissemminated int[] [not null, note:"int array of the number of dissemminated videos on [fb,yt,tiktok,whatsapp]"]
     // Garden visit
     //ວັນທີ, ເດືອນ, ປີ ລົງຢ້ຽມຢາມ	
     //ຈ.ນ ຄົວເຮືອນທັງໝົດທີ່ໄດ້ຢ້ຽມຢາມໂດຍກະສິກອນຕົວແບບ
