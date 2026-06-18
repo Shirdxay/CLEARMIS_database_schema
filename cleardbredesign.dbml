@@ -212,9 +212,11 @@ table cri_progress{
 Table nut_powder_management{
     id int [pk, increment, note:"unique identifier for each powder management record"]
     group_id varchar [not null, ref: > group.group_id, note:"foreign key referencing group id in group table"]
-    cng_meetings_conducted int [not null, note:"number of cng meetings conducted in the month"]
+    meeting_date date [not null, note:"date of the meeting"]
+    members_in_village int [not null, note:"ຈຳນວນ ສະມາຊິກ ກພຊ ທັງໝົດພາຍໃນບ້ານ"]
     total_participants int [not null, note:"total number of participants in the cng meetings"]
     food_supported_families int [not null, note:"number of poor families receiving food support through cng meetings"]
+    food_money decimal(13,2) [note null, note: "ຈຳນວນເງິນຊື້ອາຫານ (ກີບ)"]
     food_from_shg decimal(13,2) [not null, note:"quantity of food received from SHG for powder management, in LAK"]
     produced_powders jsonb [not null, note:"quantities of powders produced in the month, keyed by type; example: {rice: 10.2, vegetable: 5, fish: 2, meat: 1, legume: 4, other: 0}"]
     shared_powders jsonb [not null, note:"quantities of powders shared to non-cng in the month, keyed by type; example: {rice: 10, vegetable: 5.1, fish: 2, meat: 1, legume: 4, other: 0}"]
@@ -292,12 +294,4 @@ Table nut_monthly_update{
 Table meetings{
     id int [pk, increment, note:"unique identifier for each meeting record"]
     //NUT - NTFP meeting
-    group_id varchar [not null, ref: > group.group_id, note:"foreign key referencing group id in group table"]
-    meeting_type varchar [not null, note:"type of the meeting, e.g, NUT-NTFP meeting, NUT-Community Meeting (6-monthly); the list should be dynamic"]
-    training_date int [not null, note:"date the training/meeting was conducted"]
-    participants int [not null, note:"totalnumber of participants in the meetings"]
-    female_participants int [not null, note:"total number of female participants in the meetings"]
-    meeting_note varchar [null, note:"additional note for the meeting, nullable"]
-    created_at timestamp [default: `now()`, note:"timestamp when the meeting record was created"]
-    updated_at timestamp [default: `now()`, note:"timestamp when the meeting record was last updated"]
-}
+    c
