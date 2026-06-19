@@ -294,4 +294,12 @@ Table nut_monthly_update{
 Table meetings{
     id int [pk, increment, note:"unique identifier for each meeting record"]
     //NUT - NTFP meeting
-    c
+    group_id varchar [not null, ref: > group.group_id, note:"foreign key referencing group id in group table"]
+    meeting_type varchar [not null, note:"type of the meeting, e.g, NUT-NTFP meeting, NUT-Community Meeting (6-monthly); the list should be dynamic"]
+    training_date int [not null, note:"date the training/meeting was conducted"]
+    participants int [not null, note:"totalnumber of participants in the meetings"]
+    female_participants int [not null, note:"total number of female participants in the meetings"]
+    record_note varchar [null, note:"additional note for the meeting, nullable"]
+    created_at timestamp [default: `now()`, note:"timestamp when the meeting record was created"]
+    updated_at timestamp [default: `now()`, note:"timestamp when the meeting record was last updated"]
+}
