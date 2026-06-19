@@ -216,7 +216,11 @@ Table nut_powder_management{
     members_in_village int [not null, note:"ຈຳນວນ ສະມາຊິກ ກພຊ ທັງໝົດພາຍໃນບ້ານ"]
     total_participants int [not null, note:"total number of participants in the cng meetings"]
     food_supported_families int [not null, note:"number of poor families receiving food support through cng meetings"]
+<<<<<<< HEAD
     food_money decimal(13,2) [not null, note: "ຈຳນວນເງິນຊື້ອາຫານ (ກີບ)"]
+=======
+    food_money decimal(13,2) [note null, note: "ຈຳນວນເງິນຊື້ອາຫານ (ກີບ)"]
+>>>>>>> 1985d310c37e967a1dcb883c9b27c59dd1084d1f
     food_from_shg decimal(13,2) [not null, note:"quantity of food received from SHG for powder management, in LAK"]
     produced_powders jsonb [not null, note:"quantities of powders produced in the month, keyed by type; example: {rice: 10.2, vegetable: 5, fish: 2, meat: 1, legume: 4, other: 0}"]
     shared_powders jsonb [not null, note:"quantities of powders shared to non-cng in the month, keyed by type; example: {rice: 10, vegetable: 5.1, fish: 2, meat: 1, legume: 4, other: 0}"]
